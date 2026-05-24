@@ -1,0 +1,161 @@
+class Product:
+    def __init__(self, name, price, stock):
+        self.name = name
+        self.price = price
+        self.stock = stock
+class Store:
+    def __init__(self):
+        self.products = []
+    def add_product(self, name, price, stock):
+        self.products.append(Product(name, price, stock))
+        print(f"Product added: {name} - ${price:.2f} (Stock: {stock})\n")
+    def find_product(self, name):
+        for i in range(len(self.products)):
+            if self.products[i].name.lower() == name.lower():
+                return i
+        return -1
+    def show_products(self):
+        print("\n--- Available products:")
+        if len(self.products) == 0:
+            print("No products available.")
+            return
+        for i in range(len(self.products)):
+            print(f"[{i+1}] {self.products[i].name} - ${self.products[i].price:.2f} (Stock: {self.products[i].stock})")
+class CartItem:
+    def __init__(self, product, quantity):
+        self.product = product
+        self.quantity = quantity
+class Cart:
+    def __init__(self):
+        self.items = []
+    def add_to_cart(self, product, quantity):
+        for i in range(len(self.items)):
+            if self.items[i].product.name.lower() == product.name.lower():
+                self.items[i].quantity += quantity
+                print(f"Added {quantity} x {product.name} to cart.")
+                return
+        self.items.append(CartItem(product, quantity))
+        print(f"Added {quantity} x {product.name} to cart.")
+    def remove_from_cart(self, name):
+        if len(self.items) == 0:
+            print("X Your cart is empty.")
+            return
+        for i in range(len(self.items)):
+            if self.items[i].product.name.lower() == name.lower():
+                del self.items[i]
+                print(f"Removed {name} from cart.")
+                return
+        print(f"X '{name}' not found in cart.")
+    def view_cart(self):
+        if len(self.items) == 0:
+            print("\nX Your cart is empty.")
+            return
+        print("\n--- Your Cart ---")
+        total = 0
+        for i in range(len(self.items)):
+            item_total = self.items[i].product.price * self.items[i].quantity
+            total = total + item_total
+            print(f"- {self.items[i].product.name} x{self.items[i].quantity} - ${item_total:.2f}")
+        print(f"Total: ${total:.2f}")
+    def checkout(self):
+        if len(self.items) == 0:
+            print("\nX Your cart is empty. Nothing to checkout.")
+            return False
+        print("\n==============")
+        print("Final checkout:")
+        print("==============")
+        total = 0
+        for i in range(len(self.items)):
+            item_total = self.items[i].product.price * self.items[i].quantity
+            total = total + item_total
+            print(f"- {self.items[i].product.name} x{self.items[i].quantity} - ${item_total:.2f}")
+        print(f"Total amount due: ${total:.2f}")
+        print("Thank you for shopping with us!\n")
+        return True
+    def clear(self):
+        self.items = []
+def manager_login():
+    print("\n==============")
+    print("Store Manager Login")
+    print("==============")
+    username = input("Username: ")
+    password = input("Password: ")
+    if username == "admin" and password == "1234":
+        print("\nLogin successful! Welcome, Manager.\n")
+        return True
+    else:
+        print("\nX Login failed! Please try again or return to main menu.\n")
+        return False
+def manager_portal(store):
+    if not manager_login():
+        return
+    print("\n==============")
+    print("Add Products")
+    print("==============")
+    while True:
+        name = input("Enter product name (or 'done' to finish): ")
+        if name == 'done':
+            break
+        price = float(input("Enter product price: "))
+        stock = int(input("Enter product stock quantity: "))
+        store.add_product(name, price, stock)
+    print("Returning to main menu...")
+def customer_portal(store, cart):
+    while True:
+        print("\n==============")
+        print("CUSTOMER PORTAL")
+        print("==============")
+        store.show_products()
+        print("\nWhat would you like to do?")
+        print("Type: add / remove / view / checkout / back")
+        choice = input("Enter choice: ").lower()
+        if choice == 'add':
+            store.show_products()
+            if len(store.products) == 0:
+                continue
+            name = input("\nEnter product name: ")
+            product_index = store.find_product(name)
+            if product_index == -1:
+                print(f"X Product '{name}' not found.")
+                continue
+            quantity = int(input("Enter quantity: "))
+            stock = store.products[product_index].stock
+            if quantity > stock:
+                print(f"X Not enough stock! Only {stock} available.")
+                continue
+            cart.add_to_cart(store.products[product_index], quantity)
+            store.products[product_index].stock -= quantity
+        elif choice == 'remove':
+            name = input("\nEnter product name to remove: ")
+            cart.remove_from_cart(name)
+        elif choice == 'view':
+            cart.view_cart()
+        
+        elif choice == 'checkout':
+            if cart.checkout():
+                cart.clear()
+                break
+        elif choice == 'back':
+            print("Returning to main menu...")
+            break
+        else:
+            print("X Invalid choice. Please type: add, remove, view, checkout, or back")
+#program main
+store = Store()
+cart = Cart()
+while True:
+    print("\n==============")
+    print("MINI STORE MANAGEMENT SYSTEM")
+    print("==============")
+    print("Welcome! Please select your role:")
+    print("Type: store manager / customer / exit program")
+    choice = input("Enter choice: ").lower().strip()
+    if choice == 'store manager':
+        manager_portal(store)
+    elif choice == 'customer':
+        customer_portal(store, cart)
+    elif choice == 'exit program':
+        print("\nGoodbye! See you next time.")
+        break
+    else:
+        print("X Invalid choice. Please type: store manager, customer, or exit program")
